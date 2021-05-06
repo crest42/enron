@@ -9,7 +9,7 @@ class EnronEmails(object):
         c: sqlite3.Cursor = self.conn.cursor()
         f = ''
         if recipient is not None:
-            f = ' and recipient = ' + recipient + " "
+            f = ' and recipient = "' + recipient + '" '
         if max_recipients > 0:
             query = """
                 SELECT email_id, subject, sender, date, file_path, body, group_concat(recipient) as recipients
