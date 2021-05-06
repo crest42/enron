@@ -5,7 +5,7 @@ class EnronEmails(object):
     def __init__(self, conn):
         self.conn = conn
 
-    def get_sent_emails(self, email, max_recipients=0, recipient, limit=500):
+    def get_sent_emails(self, email, recipient, max_recipients=0, limit=500):
         c: sqlite3.Cursor = self.conn.cursor()
         filter = ''
         if recipient is not None:
