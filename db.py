@@ -5,14 +5,18 @@ class EnronEmails(object):
     def __init__(self, conn):
         self.conn = conn
 
-    def get_sent_emails(self, email, max_recipients=0, limit=500):
+    def get_sent_emails(self, email, max_recipients=0, recipient, limit=500):
         c: sqlite3.Cursor = self.conn.cursor()
+        filter = ''
+        if recipient is not None:
+            filter = 'and recipient = ' + recipient
         if max_recipients > 0:
             c.execute(
-                """
+                f"""
                 SELECT email_id, subject, sender, date, file_path, body, group_concat(recipient) as recipients
                 FROM emails inner join email_recipients using (email_id)
                 WHERE email_id in (select email_id from (select emails.email_id, sender, recipient, count(*) as count from emails join email_recipients on email_recipients.email_id = emails.email_id where sender = ? group by emails.email_id) where count <= ?)
+                {filter}
                 GROUP BY email_id, subject, sender, date, file_path, body
                 ORDER BY random()
                 LIMIT ?;
@@ -20,10 +24,11 @@ class EnronEmails(object):
             )
         else:
             c.execute(
-                """
+                f"""
                 SELECT email_id, subject, sender, date, file_path, body, group_concat(recipient) as recipients
                 FROM emails inner join email_recipients using (email_id)
                 WHERE sender = ?
+                {filter}
                 GROUP BY email_id, subject, sender, date, file_path, body
                 ORDER BY random()
                 LIMIT ?;
