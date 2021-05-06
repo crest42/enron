@@ -7,20 +7,23 @@ class EnronEmails(object):
 
     def get_sent_emails(self, email, recipient, max_recipients=0, limit=500):
         c: sqlite3.Cursor = self.conn.cursor()
-        filter = ''
+        f = ''
         if recipient is not None:
-            filter = ' and recipient = ' + recipient + " "
+            f = ' and recipient = ' + recipient + " "
         if max_recipients > 0:
-            c.execute(
-                f"""
+            query = """
                 SELECT email_id, subject, sender, date, file_path, body, group_concat(recipient) as recipients
                 FROM emails inner join email_recipients using (email_id)
                 WHERE email_id in (select email_id from (select emails.email_id, sender, recipient, count(*) as count from emails join email_recipients on email_recipients.email_id = emails.email_id where sender = ? group by emails.email_id) where count <= ?)
-                """ + filter + """
+            """
+            query += f
+            query += """
                 GROUP BY email_id, subject, sender, date, file_path, body
                 ORDER BY random()
                 LIMIT ?;
-                """, (email, max_recipients, limit,)
+            """
+            c.execute(
+                query, (email, max_recipients, limit,)
             )
         else:
             c.execute(
