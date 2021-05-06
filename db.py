@@ -106,7 +106,6 @@ class EnronEmails(object):
                     LIMIT ?;
                   """
             data = (email, email, minSend, limit, )
-            )
         else:
             sql = """
                     SELECT email_id, subject, sender, date, file_path, body, group_concat(recipient) as recipients
