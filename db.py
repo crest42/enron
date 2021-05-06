@@ -85,31 +85,49 @@ class EnronEmails(object):
             d["recipients"] = d["recipients"].split(",")
         return res
 
-    def get_recipients_by_email(self, email, domain, limit=500):
+    def get_recipients_by_email(self, email, domain, minSend, limit=500):
         c: sqlite3.Cursor = self.conn.cursor()
         if domain == '':
-            c.execute(
-                """
-                SELECT email_id, subject, sender, date, file_path, body, group_concat(recipient) as recipients
-                FROM emails inner join email_recipients using (email_id)
-                WHERE sender = ?
-                GROUP BY email_id, subject, sender, date, file_path, body
-                ORDER BY random()
-                LIMIT ?;
-                """, (email, limit,)
+            sql = """
+                    SELECT email_id, subject, sender, date, file_path, body, group_concat(recipient) as recipients
+                    FROM emails inner join email_recipients using (email_id)
+                    WHERE sender = ?
+                    and email_id in (select email_id, count from 
+                                        (
+                                            SELECT email_id, count(*) as count
+                                            FROM emails inner join email_recipients using (email_id)
+                                            WHERE sender = ?
+                                            GROUP BY sender
+                                        )
+                                     where count >= ?
+                                    )
+                    GROUP BY email_id, subject, sender, date, file_path, body
+                    ORDER BY random()
+                    LIMIT ?;
+                  """
+            data = (email, email, minSend, limit, )
             )
         else:
-            c.execute(
-            """
-                SELECT email_id, subject, sender, date, file_path, body, group_concat(recipient) as recipients
-                FROM emails inner join email_recipients using (email_id)
-                WHERE sender = ?
-                and recipient like ?
-                GROUP BY email_id, subject, sender, date, file_path, body
-                ORDER BY random()
-                LIMIT ?;
-                """, (email, f'%@{domain}', limit,)
-            )
+            sql = """
+                    SELECT email_id, subject, sender, date, file_path, body, group_concat(recipient) as recipients
+                    FROM emails inner join email_recipients using (email_id)
+                    WHERE sender = ?
+                    and email_id in (select email_id, count from 
+                                        (
+                                            SELECT email_id, count(*) as count
+                                            FROM emails inner join email_recipients using (email_id)
+                                            WHERE sender = ?
+                                            GROUP BY sender
+                                        )
+                                     where count >= ?
+                                    )
+                    and recipient like ?
+                    GROUP BY email_id, subject, sender, date, file_path, body
+                    ORDER BY random()
+                    LIMIT ?;
+                  """
+            data = (email, email, minSend, f'%@{domain}', limit,)
+        c.execute(sql, data)
         res = list(c.fetchall())
         for d in res:
             d["recipients"] = d["recipients"].split(",")
