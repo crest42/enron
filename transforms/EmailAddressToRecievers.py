@@ -12,7 +12,7 @@ class EmailAddressToRecievers(DiscoverableTransform):
     def create_entities(cls, request, response):
         email_address = request.Value
         domain = request.getTransformSetting('domain')
-        minSend = request.getTransformSetting('minSend')
+        minSend = int(request.getTransformSetting('minSend'))
         res = db.get_recipients_by_email(email_address, domain, minSend, limit=request.Slider)
         for d in res:
             for r in d['recipients']:

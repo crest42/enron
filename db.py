@@ -92,7 +92,7 @@ class EnronEmails(object):
                     SELECT email_id, subject, sender, date, file_path, body, group_concat(recipient) as recipients
                     FROM emails inner join email_recipients using (email_id)
                     WHERE sender = ?
-                    and email_id in (select email_id, count from 
+                    and email_id in (select email_id from 
                                         (
                                             SELECT email_id, count(*) as count
                                             FROM emails inner join email_recipients using (email_id)
@@ -111,7 +111,7 @@ class EnronEmails(object):
                     SELECT email_id, subject, sender, date, file_path, body, group_concat(recipient) as recipients
                     FROM emails inner join email_recipients using (email_id)
                     WHERE sender = ?
-                    and email_id in (select email_id, count from 
+                    and email_id in (select email_id from 
                                         (
                                             SELECT email_id, count(*) as count
                                             FROM emails inner join email_recipients using (email_id)
