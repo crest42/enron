@@ -8,6 +8,7 @@ class EnronEmails(object):
     def get_sent_emails(self, email, max_recipients=0, limit=500):
         c: sqlite3.Cursor = self.conn.cursor()
         if max_recipients > 0:
+            print("yes")
             c.execute(
                 """
                 SELECT email_id, subject, sender, date, file_path, body, group_concat(recipient) as recipients
