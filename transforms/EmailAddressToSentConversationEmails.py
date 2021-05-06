@@ -12,8 +12,7 @@ class EmailAddressToSentConversationEmails(DiscoverableTransform):
     def create_entities(cls, request, response):
         email_address = request.Value
         max_recipients = request.getTransformSetting('maxRecipients')
-        print(max_recipients)
-        res = db.get_sent_emails(email_address, limit=1000)
+        res = db.get_sent_emails(email_address, max_recipients, limit=1000)
         for d in res:
             ent = row_dict_to_conversation_email(d, response)
             ent.setLinkLabel("sent")
