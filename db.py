@@ -97,7 +97,7 @@ class EnronEmails(object):
                                             SELECT email_id, count(*) as count
                                             FROM emails inner join email_recipients using (email_id)
                                             WHERE sender = ?
-                                            GROUP BY sender
+                                            GROUP BY recipient
                                         )
                                      where count >= ?
                                     )
@@ -116,7 +116,7 @@ class EnronEmails(object):
                                             SELECT email_id, count(*) as count
                                             FROM emails inner join email_recipients using (email_id)
                                             WHERE sender = ?
-                                            GROUP BY sender
+                                            GROUP BY recipient
                                         )
                                      where count >= ?
                                     )
