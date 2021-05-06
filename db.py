@@ -5,18 +5,30 @@ class EnronEmails(object):
     def __init__(self, conn):
         self.conn = conn
 
-    def get_sent_emails(self, email, limit=500):
+    def get_sent_emails(self, email, max_recipients=0, limit=500):
         c: sqlite3.Cursor = self.conn.cursor()
-        c.execute(
-            """
-            SELECT email_id, subject, sender, date, file_path, body, group_concat(recipient) as recipients
-            FROM emails inner join email_recipients using (email_id)
-            WHERE sender = ?
-            GROUP BY email_id, subject, sender, date, file_path, body
-            ORDER BY random()
-            LIMIT ?;
-            """, (email, limit,)
-        )
+        if max_recipients > 0:
+            c.execute(
+                """
+                SELECT email_id, subject, sender, date, file_path, body, group_concat(recipient) as recipients
+                FROM emails inner join email_recipients using (email_id)
+                WHERE email_id in (select email_id from (select emails.email_id, sender, recipient, count(*) as count from emails join email_recipients on email_recipients.email_id = emails.email_id where sender = ? group by emails.email_id) where count >= ?)
+                GROUP BY email_id, subject, sender, date, file_path, body
+                ORDER BY random()
+                LIMIT ?;
+                """, (email, max_recipients, limit,)
+            )
+        else:
+            c.execute(
+                """
+                SELECT email_id, subject, sender, date, file_path, body, group_concat(recipient) as recipients
+                FROM emails inner join email_recipients using (email_id)
+                WHERE sender = ?
+                GROUP BY email_id, subject, sender, date, file_path, body
+                ORDER BY random()
+                LIMIT ?;
+                """, (email, limit,)
+            )
         res = list(c.fetchall())
         for d in res:
             d["recipients"] = d["recipients"].split(",")
