@@ -11,7 +11,8 @@ class EmailAddressToRecievers(DiscoverableTransform):
     @classmethod
     def create_entities(cls, request, response):
         email_address = request.Value
-        res = db.get_recipients_by_email(email_address, limit=request.Slider)
+        domain = request.getTransformSetting('domain')
+        res = db.get_recipients_by_email(email_address, domain, limit=request.Slider)
         for d in res:
             for r in d['recipients']:
                 ent = response.addEntity('maltego.EmailAddress', r)

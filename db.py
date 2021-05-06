@@ -85,18 +85,31 @@ class EnronEmails(object):
             d["recipients"] = d["recipients"].split(",")
         return res
 
-    def get_recipients_by_email(self, email, limit=500):
+    def get_recipients_by_email(self, email, domain, limit=500):
         c: sqlite3.Cursor = self.conn.cursor()
-        c.execute(
+        if domain == '':
+            c.execute(
+                """
+                SELECT email_id, subject, sender, date, file_path, body, group_concat(recipient) as recipients
+                FROM emails inner join email_recipients using (email_id)
+                WHERE sender = ?
+                GROUP BY email_id, subject, sender, date, file_path, body
+                ORDER BY random()
+                LIMIT ?;
+                """, (email, limit,)
+            )
+        else:
+            c.execute(
             """
-            SELECT email_id, subject, sender, date, file_path, body, group_concat(recipient) as recipients
-            FROM emails inner join email_recipients using (email_id)
-            WHERE sender = ?
-            GROUP BY email_id, subject, sender, date, file_path, body
-            ORDER BY random()
-            LIMIT ?;
-            """, (email, limit,)
-        )
+                SELECT email_id, subject, sender, date, file_path, body, group_concat(recipient) as recipients
+                FROM emails inner join email_recipients using (email_id)
+                WHERE sender = ?
+                and recipient like ?
+                GROUP BY email_id, subject, sender, date, file_path, body
+                ORDER BY random()
+                LIMIT ?;
+                """, (email, f'%@{domain}', limit,)
+            )
         res = list(c.fetchall())
         for d in res:
             d["recipients"] = d["recipients"].split(",")
