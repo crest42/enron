@@ -9,12 +9,13 @@ class PhraseToEmail(DiscoverableTransform):
 
     @classmethod
     def create_entities(cls, request, response):
-        #phrase = request.Value
-        res = PhraseToEmail.get_emails("fraud", limit=request.Slider)
+        phrase = request.Value
+        sender = request.getTransformSetting('sender')
+        res = PhraseToEmail.get_emails(phrase, sender, limit=request.Slider)
         for d in res:
             ent = row_dict_to_conversation_email(d, response)
             ent.setLinkLabel("sent")
 
     @staticmethod
-    def get_emails(phrase, limit=250):
-        return db.search_mails_by_phrase(phrase, limit)
+    def get_emails(phrase, sender, limit=250):
+        return db.search_mails_by_phrase(phrase, sender, limit)
