@@ -16,7 +16,7 @@ class EnronEmails(object):
                 SELECT email_id, subject, sender, date, file_path, body, group_concat(recipient) as recipients
                 FROM emails inner join email_recipients using (email_id)
                 WHERE email_id in (select email_id from (select emails.email_id, sender, recipient, count(*) as count from emails join email_recipients on email_recipients.email_id = emails.email_id where sender = ? group by emails.email_id) where count <= ?)
-                """ + filter} + """
+                """ + filter + """
                 GROUP BY email_id, subject, sender, date, file_path, body
                 ORDER BY random()
                 LIMIT ?;
