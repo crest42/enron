@@ -9,7 +9,7 @@ class EnronEmails(object):
         c: sqlite3.Cursor = self.conn.cursor()
         filter = ''
         if recipient is not None:
-            filter = 'and recipient = ' + recipient
+            filter = ' and recipient = ' + recipient + " "
         if max_recipients > 0:
             c.execute(
                 f"""
