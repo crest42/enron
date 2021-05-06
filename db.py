@@ -239,7 +239,7 @@ class EnronEmails(object):
 
     def search_mails_by_phrase(self, phrase, sender, limit=500):
         c: sqlite3.Cursor = self.conn.cursor()
-        if sender == '':
+        if sender is None:
             c.execute(
                 """
                 SELECT email_id, subject, sender, date, file_path, body, group_concat(recipient) as recipients
