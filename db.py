@@ -92,9 +92,9 @@ class EnronEmails(object):
                     SELECT email_id, subject, sender, date, file_path, body, group_concat(recipient) as recipients
                     FROM emails inner join email_recipients using (email_id)
                     WHERE sender = ?
-                    and email_id in (select email_id from 
+                    and recipient in (select recipient from 
                                         (
-                                            SELECT email_id, count(*) as count
+                                            SELECT recipient, count(*) as count
                                             FROM emails inner join email_recipients using (email_id)
                                             WHERE sender = ?
                                             GROUP BY recipient
